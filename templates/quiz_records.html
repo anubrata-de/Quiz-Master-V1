@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-white">Quiz Records</h2>
+    
+    <div class="card bg-dark">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover text-white">
+                    <thead>
+                        <tr>
+                            <th class="text-white border-bottom border-white">User</th>
+                            <th class="text-white border-bottom border-white">Quiz</th>
+                            <th class="text-white border-bottom border-white">Score</th>
+                            <th class="text-white border-bottom border-white">Percentage</th>
+                            <th class="text-white border-bottom border-white">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td class="text-white">{{ record.user_name }}</td>
+                            <td class="text-white">{{ record.quiz_title }}</td>
+                            <td class="text-white">{{ record.score }}/{{ record.total_questions }}</td>
+                            <td class="text-white">{{ "%.1f"|format((record.score / record.total_questions) * 100) }}%</td>
+                            <td class="text-white">{{ record.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        background-color: #1a1a1a !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .table {
+        color: white !important;
+    }
+    .table thead th {
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        color: white !important;
+    }
+    .table tbody tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    .table td {
+        color: white !important;
+    }
+</style>
+{% endblock %} 

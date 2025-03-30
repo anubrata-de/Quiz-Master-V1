@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}View Score - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card bg-dark">
+                <div class="card-body text-center">
+                    <h2 class="card-title text-white mb-4">
+                        <i class="fas fa-trophy text-warning me-2"></i>Quiz Result
+                    </h2>
+                    <div class="display-4 text-success mb-4">
+                        {{ score }}/{{ total_questions }}
+                    </div>
+                    <div class="h2 text-primary mb-4">
+                        {{ "%.1f"|format(percentage) }}%
+                    </div>
+                    <div class="alert alert-success mb-4">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Quiz submitted successfully!
+                    </div>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

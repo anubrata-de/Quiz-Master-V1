@@ -1,0 +1,32 @@
+{% extends 'base_template.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="container mt-5">
+    <div class="jumbotron text-center bg-dark text-white">
+        <h1 class="display-4">Welcome to the Dashboard</h1>
+        <p class="lead">Manage your profile and explore admin features.</p>
+        <hr class="my-4">
+    </div>
+
+    {% if user %}
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white text-center">
+            <h3>User Information</h3>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Name:</strong> {{ user[1] }}</li>
+                <li class="list-group-item"><strong>Email:</strong> {{ user[2] }}</li>
+            </ul>
+        </div>
+        <div class="card-footer text-center">
+            <a href="/logout" class="btn btn-danger btn-lg">Logout</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center mt-3">No user data available.</div>
+    {% endif %}
+</div>
+
+{% endblock %}

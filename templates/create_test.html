@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Create Test - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center mb-4 text-white">Create New Test</h2>
+                    
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label text-white") }}
+                            {{ form.title(class="form-control", placeholder="Enter test title") }}
+                            {% for error in form.title.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label text-white") }}
+                            {{ form.description(class="form-control", placeholder="Enter test description", rows="3") }}
+                            {% for error in form.description.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('manage_tests') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

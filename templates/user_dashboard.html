@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card bg-dark">
+                <div class="card-body">
+                    <h1 class="display-4 mb-4 text-white">
+                        <i class="fas fa-user-circle text-primary me-3"></i>Welcome, {{ user.name }}!
+                    </h1>
+                    
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4">
+                            <div class="card h-100 bg-dark border border-white">
+                                <div class="card-body">
+                                    <i class="fas fa-chart-line fa-2x text-primary mb-3"></i>
+                                    <h5 class="card-title text-white">My Results</h5>
+                                    <p class="card-text text-white">Check your quiz performance history.</p>
+                                    <a href="{{ url_for('my_results') }}" class="btn btn-primary">
+                                        <i class="fas fa-chart-bar me-2"></i>View Results
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100 bg-dark border border-white">
+                                <div class="card-body">
+                                    <i class="fas fa-user-cog fa-2x text-primary mb-3"></i>
+                                    <h5 class="card-title text-white">Profile Settings</h5>
+                                    <p class="card-text text-white">Manage your account settings.</p>
+                                    <a href="{{ url_for('profile') }}" class="btn btn-primary">
+                                        <i class="fas fa-cog me-2"></i>Settings
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h2 class="mb-4 text-white">Available Tests</h2>
+                        {% if tests %}
+                            <div class="row g-4">
+                                {% for test in tests %}
+                                    <div class="col-md-6">
+                                        <div class="card h-100 bg-dark border border-white">
+                                            <div class="card-body">
+                                                <h5 class="card-title text-white">{{ test.title }}</h5>
+                                                <p class="card-text text-white">Ready to challenge yourself?</p>
+                                                <a href="{{ url_for('attempt_test', test_id=test.id) }}" class="btn btn-primary">
+                                                    <i class="fas fa-play me-2"></i>Start Test
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>No tests available at the moment.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

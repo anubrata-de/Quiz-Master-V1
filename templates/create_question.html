@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Create Question - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <h2 class="card-title mb-4" style="color: var(--accent-color);">
+                    <i class="fas fa-plus-circle me-2"></i>Create Question
+                </h2>
+
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Test: <strong>{{ test.title }}</strong>
+                </div>
+                
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-4">
+                        <label for="text" class="form-label">Question Text</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-question-circle"></i>
+                            </span>
+                            {{ form.text(class="form-control", placeholder="Enter your question", rows="3") }}
+                        </div>
+                        {% if form.text.errors %}
+                            {% for error in form.text.errors %}
+                                <div class="text-danger mt-1">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Options</label>
+                        {% for option_form in form.options %}
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">
+                                    <i class="fas fa-circle-dot"></i>
+                                </span>
+                                {{ option_form.text(class="form-control", placeholder="Enter option text") }}
+                                <div class="input-group-text">
+                                    <div class="form-check">
+                                        {{ option_form.is_correct(class="form-check-input") }}
+                                        <label class="form-check-label">Correct</label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if option_form.text.errors %}
+                                {% for error in option_form.text.errors %}
+                                    <div class="text-danger mt-1">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Question
+                        </button>
+                        <a href="{{ url_for('manage_questions', test_id=test.id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

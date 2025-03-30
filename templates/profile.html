@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-dark">
+                <div class="card-body">
+                    <h2 class="card-title text-white mb-4">
+                        <i class="fas fa-user-circle me-2"></i>My Profile
+                    </h2>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="text-white">Name</label>
+                                <p class="text-white">{{ user.name }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-white">Email</label>
+                                <p class="text-white">{{ user.email }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-white">Date of Birth</label>
+                                <p class="text-white">{{ user.dob.strftime('%Y-%m-%d') }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="text-white">Role</label>
+                                <p class="text-white">{{ user.role|title }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-white">Member Since</label>
+                                <p class="text-white">{{ user.created_at.strftime('%Y-%m-%d') }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-dark border border-white mb-4">
+                        <div class="card-body">
+                            <h3 class="card-title text-white mb-3">
+                                <i class="fas fa-chart-line me-2"></i>Quiz Statistics
+                            </h3>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <h4 class="text-primary">{{ user.results|length }}</h4>
+                                        <p class="text-white">Total Attempts</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <h4 class="text-success">
+                                            {% if user.results %}
+                                                {{ (user.results|map(attribute='score')|sum / user.results|length)|round(1) }}
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </h4>
+                                        <p class="text-white">Average Score</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <h4 class="text-info">
+                                            {% set last_result = user.results|sort(attribute='created_at')|last if user.results else None %}
+                                            {% if last_result %}
+                                                {{ last_result.created_at.strftime('%Y-%m-%d') }}
+                                            {% else %}
+                                                Never
+                                            {% endif %}
+                                        </h4>
+                                        <p class="text-white">Last Attempt</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('my_results') }}" class="btn btn-primary">
+                            <i class="fas fa-history me-2"></i>View All Results
+                        </a>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light">
+                            <i class="fas fa-home me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

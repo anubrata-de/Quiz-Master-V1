@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Add Questions to Quiz</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.text.label }}
+            {{ form.text(class="form-control") }}
+            {% for error in form.text.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.option1.label }}
+            {{ form.option1(class="form-control") }}
+            {% for error in form.option1.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.option2.label }}
+            {{ form.option2(class="form-control") }}
+            {% for error in form.option2.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.option3.label }}
+            {{ form.option3(class="form-control") }}
+            {% for error in form.option3.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.option4.label }}
+            {{ form.option4(class="form-control") }}
+            {% for error in form.option4.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.correct_option.label }}
+            {{ form.correct_option(class="form-control") }}
+            {% for error in form.correct_option.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        
+        {{ form.submit(class="btn btn-primary mt-3") }}
+    </form>
+    
+    <div class="mt-4">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Finish Adding Questions</a>
+    </div>
+</div>
+{% endblock %} 
