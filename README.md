@@ -1,29 +1,40 @@
-# Quiz Master
+# Quiz Master - V1
 
-A comprehensive quiz management system built with Flask that allows administrators to create and manage quizzes while enabling users to take tests and track their performance.
+A multi-user exam preparation platform built with Flask that allows administrators to create and manage quizzes while enabling users to take tests and track their performance.
 
-## Features
+## Project Overview
+This is a mandatory project that implements an exam preparation site for multiple courses. The application is built using:
+- Flask for application back-end
+- Jinja2 templating, HTML, CSS and Bootstrap for front-end
+- SQLite for database
+
+## Core Features
 
 ### User Management
-- User registration with email verification
-- Role-based access control (Admin/User)
-- User profile management
-- Admin can manage all users
+- Two distinct roles: Admin (Quiz Master) and User
+- Admin account pre-exists in database (no registration required)
+- User registration with:
+  - Email (username)
+  - Password
+  - Full Name
+  - Qualification
+  - Date of Birth
 - Secure password hashing
+- Role-based access control
 
 ### Subject and Chapter Management
-- Create and manage subjects
-- Add chapters to subjects
-- Edit and delete subjects/chapters
+- Admin can create and manage subjects
+- Each subject can have multiple chapters
 - Hierarchical organization of content
+- Edit and delete functionality for both subjects and chapters
 
 ### Quiz Management
 - Create quizzes with:
   - Title and description
   - Date and time settings
-  - Duration limit
+  - Duration limit (HH:MM format)
   - Remarks/instructions
-- Add multiple-choice questions
+- Add multiple-choice questions (MCQ)
 - Edit and delete quizzes
 - View quiz statistics (attempts, questions)
 
@@ -49,16 +60,9 @@ A comprehensive quiz management system built with Flask that allows administrato
 - Track personal performance
 - View attempt history
 
-## Technical Features
-- Flask web framework
-- SQLAlchemy ORM
-- Flask-Login for authentication
-- WTForms for form handling
-- SQLite database
-- Responsive Bootstrap UI
-- Dark mode interface
+## Technical Implementation
 
-## Database Structure
+### Database Structure
 - User: Stores user information and authentication
 - Subject: Manages quiz subjects
 - Chapter: Organizes content within subjects
@@ -67,7 +71,7 @@ A comprehensive quiz management system built with Flask that allows administrato
 - Option: Manages answer choices
 - Result: Tracks user performance
 
-## Security Features
+### Security Features
 - Password hashing
 - Role-based access control
 - Session management
@@ -76,14 +80,15 @@ A comprehensive quiz management system built with Flask that allows administrato
 
 ## Usage
 
-### Admin
-1. Login as admin
+### Admin (Quiz Master)
+1. Login with pre-existing admin account
 2. Create subjects and chapters
 3. Create quizzes with questions
 4. Manage users and view statistics
 
 ### User
-1. Register/Login
-2. Browse available quizzes
-3. Take quizzes within time limit
-4. View results and performance history
+1. Register with required details
+2. Login to access dashboard
+3. Browse available quizzes
+4. Take quizzes within time limit
+5. View results and performance history
