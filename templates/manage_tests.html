@@ -3,44 +3,51 @@
 {% block title %}Manage Tests - Quiz Master{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card bg-dark">
-                <div class="card-body">
-                    <h2 class="card-title text-white mb-4">
-                        <i class="fas fa-list me-2"></i>Manage Tests
-                    </h2>
-                    
-                    <div class="table-responsive">
-                        <table class="table table-dark table-hover">
-                            <thead>
-                                <tr>
-                                    <th class="text-white">Title</th>
-                                    <th class="text-white">Questions</th>
-                                    <th class="text-white">Attempts</th>
-                                    <th class="text-white text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for test in tests %}
-                                <tr>
-                                    <td class="text-white">{{ test.title }}</td>
-                                    <td class="text-white">{{ test.question_count }}</td>
-                                    <td class="text-white">{{ test.attempt_count }}</td>
-                                    <td class="text-center">
-                                        <a href="{{ url_for('delete_test', test_id=test.id) }}" 
-                                           class="btn btn-danger"
-                                           onclick="return confirm('Are you sure you want to delete this test?')">
-                                            <i class="fas fa-trash me-2"></i>Delete
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white">Manage Tests</h2>
+        <a href="{{ url_for('create_test') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Create New Test
+        </a>
+    </div>
+
+    <div class="card bg-dark">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Questions</th>
+                            <th>Attempts</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quiz in tests %}
+                        <tr>
+                            <td>{{ quiz.title }}</td>
+                            <td>{{ quiz.questions|length }}</td>
+                            <td>{{ quiz.results|length }}</td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('edit_quiz', quiz_id=quiz.id) }}" class="btn btn-primary me-2">
+                                        <i class="fas fa-edit me-1"></i>Edit
+                                    </a>
+                                    <a href="{{ url_for('delete_quiz', quiz_id=quiz.id) }}" class="btn btn-danger" 
+                                       onclick="return confirm('Are you sure you want to delete this quiz?')">
+                                        <i class="fas fa-trash me-1"></i>Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center">No tests available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -51,22 +58,31 @@
         margin-bottom: 0;
     }
     .table th {
-        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        border-top: none;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
     }
     .table td {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        vertical-align: middle;
     }
-    .table-hover tbody tr:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+    .btn-group .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+        border-color: #0a58ca;
     }
     .btn-danger {
         background-color: #dc3545;
         border-color: #dc3545;
-        padding: 0.375rem 0.75rem;
     }
     .btn-danger:hover {
-        background-color: #c82333;
-        border-color: #bd2130;
+        background-color: #bb2d3b;
+        border-color: #b02a37;
     }
 </style>
 {% endblock %} 

@@ -7,15 +7,12 @@ from werkzeug.security import generate_password_hash
 
 def init_database():
     with app.app_context():
-        db.session.execute(text('DROP TABLE IF EXISTS users'))
-        db.session.execute(text('DROP TABLE IF EXISTS options'))
-        db.session.execute(text('DROP TABLE IF EXISTS questions'))
-        db.session.execute(text('DROP TABLE IF EXISTS quizzes'))
-        db.session.execute(text('DROP TABLE IF EXISTS results'))
         db.session.execute(text('DROP TABLE IF EXISTS option'))
         db.session.execute(text('DROP TABLE IF EXISTS question'))
         db.session.execute(text('DROP TABLE IF EXISTS quiz'))
         db.session.execute(text('DROP TABLE IF EXISTS result'))
+        db.session.execute(text('DROP TABLE IF EXISTS chapter'))
+        db.session.execute(text('DROP TABLE IF EXISTS subject'))
         db.session.execute(text('DROP TABLE IF EXISTS user'))
         db.session.execute(text('DROP TABLE IF EXISTS alembic_version'))
         db.session.commit()

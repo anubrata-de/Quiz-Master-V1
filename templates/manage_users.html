@@ -30,12 +30,22 @@
                                     <td class="text-white">{{ user.name }}</td>
                                     <td class="text-white">{{ user.email }}</td>
                                     <td class="text-white">{{ user.role|title }}</td>
-                                    <td class="text-white">{{ user.results|length }}</td>
                                     <td class="text-white">
-                                        {% if user.results %}
-                                            {{ (user.results|map(attribute='percentage')|sum / user.results|length)|round(1) }}%
+                                        {% if user.role == 'admin' %}
+                                            Not Applicable
                                         {% else %}
-                                            0%
+                                            {{ user.results|length }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-white">
+                                        {% if user.role == 'admin' %}
+                                            Not Applicable
+                                        {% else %}
+                                            {% if user.results %}
+                                                {{ (user.results|map(attribute='percentage')|sum / user.results|length)|round(1) }}%
+                                            {% else %}
+                                                0%
+                                            {% endif %}
                                         {% endif %}
                                     </td>
                                     <td class="text-center">

@@ -13,6 +13,7 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+    qualification = db.Column(db.String(255), nullable=True)
     dob = db.Column(db.Date, nullable=True)
     role = db.Column(Enum('user', 'admin', name='user_roles'), default='user')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -43,13 +44,36 @@ class User(db.Model, UserMixin):
     def is_anonymous(self):
         return False
 
+class Subject(db.Model):
+    __tablename__ = 'subject'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Chapter(db.Model):
+    __tablename__ = 'chapter'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id', ondelete='CASCADE'), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    subject = db.relationship('Subject', backref=db.backref('chapters', cascade='all, delete-orphan'))
+
 class Quiz(db.Model):
     __tablename__ = 'quiz'
     
     id = db.Column(db.Integer, primary_key=True)
+    chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id', ondelete='CASCADE'), nullable=False)
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
+    date_of_quiz = db.Column(db.DateTime, nullable=False)
+    time_duration = db.Column(db.String(5), nullable=False)
+    remarks = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    chapter = db.relationship('Chapter', backref=db.backref('quizzes', cascade='all, delete-orphan'))
 
 class Question(db.Model):
     __tablename__ = 'question'
@@ -58,6 +82,7 @@ class Question(db.Model):
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id', ondelete='CASCADE'), nullable=False)
     text = db.Column(db.Text, nullable=False)
     correct_option = db.Column(db.Integer, nullable=False)
+    marks = db.Column(db.Integer, nullable=False, default=1)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     quiz = db.relationship('Quiz', backref=db.backref('questions', cascade='all, delete-orphan'))
 
@@ -67,6 +92,7 @@ class Option(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question_id = db.Column(db.Integer, db.ForeignKey('question.id', ondelete='CASCADE'), nullable=True)
     option_text = db.Column(db.Text, nullable=False)
+    is_correct = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     question = db.relationship('Question', backref=db.backref('options', cascade='all, delete-orphan'))
 
@@ -79,6 +105,8 @@ class Result(db.Model):
     score = db.Column(db.Integer, nullable=False)
     total_questions = db.Column(db.Integer, nullable=False)
     percentage = db.Column(db.Float, nullable=False)
+    time_taken = db.Column(db.String(5), nullable=True)
+    completed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('results', cascade='all, delete-orphan'))
     quiz = db.relationship('Quiz', backref=db.backref('results', cascade='all, delete-orphan'))

@@ -1,99 +1,112 @@
 {% extends "base.html" %}
 
-{% block title %}Attempt Test - Quiz Master{% endblock %}
+{% block title %}Attempt Quiz - Quiz Master{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card bg-dark">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="card-title mb-0 text-white">
-                        <i class="fas fa-pencil-alt me-2"></i>{{ test.title }}
-                    </h2>
+<div class="container mt-4">
+    <!-- Quiz Timer -->
+    <div class="card bg-dark mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="text-white mb-0">{{ test.title }}</h4>
+                <div class="timer-container">
+                    <span class="text-white me-2">Time Remaining:</span>
+                    <span id="timer" class="badge bg-danger fs-5"></span>
                 </div>
-
-                <div class="alert alert-info mb-4">
-                    <i class="fas fa-info-circle me-2"></i>
-                    This test has {{ test.questions|length }} questions.
-                </div>
-
-                <form method="POST" id="quiz-form" action="{{ url_for('submit_test', test_id=test.id) }}">
-                    {% for question in test.questions %}
-                        <div class="card mb-4 bg-dark border border-white">
-                            <div class="card-body">
-                                <h5 class="card-title mb-3 text-white">
-                                    Question {{ loop.index }} of {{ test.questions|length }}
-                                </h5>
-                                <p class="card-text text-white">{{ question.text }}</p>
-                                
-                                <div class="list-group">
-                                    {% for option in question.options %}
-                                        <label class="list-group-item bg-dark text-white border border-white">
-                                            <input class="form-check-input me-1" 
-                                                   type="radio" 
-                                                   name="question_{{ question.id }}" 
-                                                   value="{{ option.id }}" 
-                                                   required>
-                                            {{ option.text }}
-                                        </label>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-check me-2"></i>Submit Test
-                        </button>
-                        <button type="button" 
-                                class="btn btn-outline-danger" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#confirmModal">
-                            <i class="fas fa-times me-2"></i>Cancel Test
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
-</div>
 
-<div class="modal fade" id="confirmModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark">
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title text-white">Confirm Cancel</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body text-white">
-                <p>Are you sure you want to cancel this test? Your progress will be lost.</p>
-            </div>
-            <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Test</button>
-                <a href="{{ url_for('dashboard') }}" class="btn btn-danger">
-                    <i class="fas fa-times me-2"></i>Cancel Test
-                </a>
-            </div>
+    <!-- Quiz Form -->
+    <div class="card bg-dark">
+        <div class="card-body">
+            <form id="quizForm" method="POST" action="{{ url_for('submit_test', test_id=test.id) }}">
+                {% for question in questions %}
+                <div class="mb-4">
+                    <h5 class="text-white mb-3">{{ loop.index }}. {{ question.text }}</h5>
+                    {% for option in question.options %}
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
+                               id="option{{ option.id }}" value="{{ option.id }}" required>
+                        <label class="form-check-label text-white" for="option{{ option.id }}">
+                            {{ option.text }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Submit Quiz</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <style>
     .card {
-        background-color: #1a1a1a !important;
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .border-white {
-        border-color: rgba(255, 255, 255, 0.2) !important;
+    .timer-container {
+        background-color: rgba(0, 0, 0, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
     }
-    .list-group-item {
-        background-color: #1a1a1a !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
+    .badge {
+        font-size: 1.2rem;
+        padding: 0.5rem 1rem;
     }
-    .list-group-item:hover {
-        background-color: rgba(255, 255, 255, 0.1) !important;
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .form-check-label {
+        color: white;
     }
 </style>
+
+<script>
+    // Parse duration string (HH:MM) to minutes
+    function parseDuration(duration) {
+        const [hours, minutes] = duration.split(':').map(Number);
+        return (hours * 60) + minutes;
+    }
+
+    // Format time as HH:MM:SS
+    function formatTime(minutes, seconds) {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Start countdown timer
+    function startTimer(duration) {
+        let totalMinutes = parseDuration(duration);
+        let totalSeconds = totalMinutes * 60;
+        
+        const timerElement = document.getElementById('timer');
+        const quizForm = document.getElementById('quizForm');
+        
+        const timer = setInterval(() => {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            timerElement.textContent = formatTime(minutes, seconds);
+            
+            if (totalSeconds <= 0) {
+                clearInterval(timer);
+                timerElement.textContent = "Time's Up!";
+                quizForm.submit(); // Auto-submit the quiz
+            }
+            
+            totalSeconds--;
+        }, 1000);
+    }
+
+    // Start the timer when the page loads
+    window.onload = function() {
+        startTimer("{{ test.time_duration }}");
+    };
+</script>
 {% endblock %} 

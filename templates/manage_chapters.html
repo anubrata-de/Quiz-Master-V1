@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Chapters - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-white">Manage Chapters</h2>
+    
+    <!-- Add Chapter Form -->
+    <div class="card mb-4 bg-dark">
+        <div class="card-body">
+            <h3 class="text-white">Add New Chapter</h3>
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.subject_id.label(class="form-label text-white") }}
+                    {{ form.subject_id(class="form-select bg-dark text-white") }}
+                    {% for error in form.subject_id.errors %}
+                        <span class="text-danger">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.name.label(class="form-label text-white") }}
+                    {{ form.name(class="form-control bg-dark text-white") }}
+                    {% for error in form.name.errors %}
+                        <span class="text-danger">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label text-white") }}
+                    {{ form.description(class="form-control bg-dark text-white") }}
+                    {% for error in form.description.errors %}
+                        <span class="text-danger">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {{ form.submit(class="btn btn-primary") }}
+            </form>
+        </div>
+    </div>
+
+    <!-- Chapters List -->
+    <div class="card bg-dark">
+        <div class="card-body">
+            <h3 class="text-white">Existing Chapters</h3>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-white">Subject</th>
+                            <th class="text-white">Chapter Name</th>
+                            <th class="text-white">Description</th>
+                            <th class="text-white">Quizzes</th>
+                            <th class="text-white">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chapter in chapters %}
+                        <tr>
+                            <td class="text-white">{{ chapter.subject.name }}</td>
+                            <td class="text-white">{{ chapter.name }}</td>
+                            <td class="text-white">{{ chapter.description }}</td>
+                            <td class="text-white">{{ chapter.quizzes|length }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('edit_chapter', chapter_id=chapter.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a href="{{ url_for('delete_chapter', chapter_id=chapter.id) }}" class="btn btn-sm btn-danger" 
+                                       onclick="return confirm('Are you sure you want to delete this chapter?')">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .table {
+        margin-bottom: 0;
+    }
+    .table th {
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    .table td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    .form-control {
+        border-color: rgba(255, 255, 255, 0.2);
+        background-color: #2b3035;
+        color: white;
+    }
+    .form-control:focus {
+        background-color: #2b3035;
+        border-color: #0d6efd;
+        color: white;
+    }
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    select.form-control {
+        color: white;
+    }
+    select.form-control option {
+        background-color: #2b3035;
+        color: white;
+    }
+    .form-label {
+        color: white;
+    }
+</style>
+{% endblock %} 

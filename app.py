@@ -1,13 +1,13 @@
 from flask import Flask, render_template, redirect, url_for, session, flash, request
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, DateField, TextAreaField, IntegerField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, DateField, TextAreaField, IntegerField, DateTimeField
 from wtforms.validators import DataRequired, Email, ValidationError, Optional, NumberRange
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import os
 from datetime import date
-from models import db, User, Quiz, Question, Option, Result
+from models import db, User, Quiz, Question, Option, Result, Chapter, Subject, Chapter
 from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
@@ -74,10 +74,21 @@ class UserEditForm(FlaskForm):
         return True
 
 class QuizForm(FlaskForm):
+    chapter_id = SelectField("Chapter", coerce=int, validators=[DataRequired()])
     title = StringField("Quiz Title", validators=[DataRequired()])
     description = TextAreaField("Description", validators=[Optional()])
-    time_limit = IntegerField("Time Limit (minutes)", validators=[DataRequired(), NumberRange(min=1, max=120)], default=30)
+    date_of_quiz = DateTimeField("Date of Quiz", format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
+    time_duration = StringField("Duration (HH:MM)", validators=[DataRequired()])
+    remarks = TextAreaField("Remarks", validators=[Optional()])
     submit = SubmitField("Create Quiz")
+
+    def validate_time_duration(self, field):
+        try:
+            hours, minutes = map(int, field.data.split(':'))
+            if not (0 <= hours <= 23 and 0 <= minutes <= 59):
+                raise ValueError("Invalid time format")
+        except ValueError:
+            raise ValidationError("Please enter duration in HH:MM format (e.g., 01:30)")
 
 class QuestionForm(FlaskForm):
     text = StringField("Question Text", validators=[DataRequired()])
@@ -87,6 +98,17 @@ class QuestionForm(FlaskForm):
     option4 = StringField("Option 4", validators=[DataRequired()])
     correct_option = SelectField("Correct Option", choices=[('1', 'Option 1'), ('2', 'Option 2'), ('3', 'Option 3'), ('4', 'Option 4')], validators=[DataRequired()])
     submit = SubmitField("Add Question")
+
+class SubjectForm(FlaskForm):
+    name = StringField("Subject Name", validators=[DataRequired()])
+    description = TextAreaField("Description", validators=[Optional()])
+    submit = SubmitField("Add Subject")
+
+class ChapterForm(FlaskForm):
+    subject_id = SelectField("Subject", coerce=int, validators=[DataRequired()])
+    name = StringField("Chapter Name", validators=[DataRequired()])
+    description = TextAreaField("Description", validators=[Optional()])
+    submit = SubmitField("Add Chapter")
 
 def admin_required(f):
     @wraps(f)
@@ -152,8 +174,33 @@ def login():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    quizzes = Quiz.query.all()
-    return render_template('user_dashboard.html', user=current_user, tests=quizzes)
+    # Get all subjects and chapters for filters
+    subjects = Subject.query.all()
+    chapters = Chapter.query.all()
+    
+    # Get filter parameters
+    subject_id = request.args.get('subject_id', type=int)
+    chapter_id = request.args.get('chapter_id', type=int)
+    
+    # Build query
+    query = Quiz.query
+    
+    # Apply filters if selected
+    if subject_id:
+        query = query.join(Chapter).filter(Chapter.subject_id == subject_id)
+    if chapter_id:
+        query = query.filter(Quiz.chapter_id == chapter_id)
+    
+    # Get filtered quizzes
+    tests = query.order_by(Quiz.date_of_quiz.desc()).all()
+    
+    return render_template('user_dashboard.html', 
+                         user=current_user, 
+                         tests=tests,
+                         subjects=subjects,
+                         chapters=chapters,
+                         selected_subject=subject_id,
+                         selected_chapter=chapter_id)
 
 @app.route('/attempt_test/<int:test_id>', methods=['GET'])
 @login_required
@@ -164,6 +211,7 @@ def attempt_test(test_id):
     quiz_data = {
         "id": quiz.id,
         "title": quiz.title,
+        "time_duration": quiz.time_duration,
         "questions": [{
             "id": question.id,
             "text": question.text,
@@ -323,11 +371,23 @@ def logout():
 @admin_required
 def create_test():
     form = QuizForm()
+    # Get all chapters for the dropdown
+    chapters = Chapter.query.all()
+    if not chapters:
+        flash("Please create a subject and chapter first!", "warning")
+        return redirect(url_for('admin_dashboard'))
+    
+    form.chapter_id.choices = [(chapter.id, f"{chapter.subject.name} - {chapter.name}") for chapter in chapters]
+    
     if form.validate_on_submit():
         try:
             quiz = Quiz(
+                chapter_id=form.chapter_id.data,
                 title=form.title.data,
-                description=form.description.data
+                description=form.description.data,
+                date_of_quiz=form.date_of_quiz.data,
+                time_duration=form.time_duration.data,
+                remarks=form.remarks.data
             )
             db.session.add(quiz)
             db.session.commit()
@@ -383,25 +443,14 @@ def add_questions(quiz_id):
     return render_template('add_questions.html', form=form, quiz_id=quiz_id)
 
 @app.route('/admin/manage_tests')
+@login_required
 @admin_required
 def manage_tests():
-    tests = db.session.query(
-        Quiz,
-        db.func.count(Question.id).label('question_count'),
-        db.func.count(Result.id).label('attempt_count')
-    ).outerjoin(Question, Quiz.id == Question.quiz_id)\
-     .outerjoin(Result, Quiz.id == Result.quiz_id)\
-     .group_by(Quiz.id, Quiz.title)\
-     .all()
-    
-    formatted_tests = [{
-        'id': quiz.id,
-        'title': quiz.title,
-        'question_count': question_count,
-        'attempt_count': attempt_count
-    } for quiz, question_count, attempt_count in tests]
-    
-    return render_template('manage_tests.html', tests=formatted_tests)
+    tests = Quiz.query.options(
+        db.joinedload(Quiz.questions),
+        db.joinedload(Quiz.results)
+    ).all()
+    return render_template('manage_tests.html', tests=tests)
 
 @app.route('/admin/delete_test/<int:test_id>')
 @admin_required
@@ -486,6 +535,154 @@ def delete_user(user_id):
         db.session.rollback()
         flash(f"Error deleting user: {str(e)}", "danger")
     return redirect(url_for('manage_users'))
+
+@app.route('/admin/manage_subjects', methods=['GET', 'POST'])
+@admin_required
+def manage_subjects():
+    form = SubjectForm()
+    if form.validate_on_submit():
+        try:
+            subject = Subject(
+                name=form.name.data,
+                description=form.description.data
+            )
+            db.session.add(subject)
+            db.session.commit()
+            flash("Subject added successfully!", "success")
+            return redirect(url_for('manage_subjects'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error adding subject: {str(e)}", "danger")
+    subjects = Subject.query.all()
+    return render_template('manage_subjects.html', form=form, subjects=subjects)
+
+@app.route('/admin/delete_subject/<int:subject_id>')
+@admin_required
+def delete_subject(subject_id):
+    try:
+        subject = Subject.query.get_or_404(subject_id)
+        db.session.delete(subject)
+        db.session.commit()
+        flash("Subject deleted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting subject: {str(e)}", "danger")
+    return redirect(url_for('manage_subjects'))
+
+@app.route('/admin/manage_chapters', methods=['GET', 'POST'])
+@admin_required
+def manage_chapters():
+    form = ChapterForm()
+    subjects = Subject.query.all()
+    form.subject_id.choices = [(subject.id, subject.name) for subject in subjects]
+    
+    if form.validate_on_submit():
+        try:
+            chapter = Chapter(
+                subject_id=form.subject_id.data,
+                name=form.name.data,
+                description=form.description.data
+            )
+            db.session.add(chapter)
+            db.session.commit()
+            flash("Chapter added successfully!", "success")
+            return redirect(url_for('manage_chapters'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error adding chapter: {str(e)}", "danger")
+    chapters = Chapter.query.all()
+    return render_template('manage_chapters.html', form=form, chapters=chapters)
+
+@app.route('/admin/edit_chapter/<int:chapter_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_chapter(chapter_id):
+    chapter = Chapter.query.get_or_404(chapter_id)
+    form = ChapterForm()
+    subjects = Subject.query.all()
+    form.subject_id.choices = [(subject.id, subject.name) for subject in subjects]
+
+    if request.method == 'GET':
+        form.subject_id.data = chapter.subject_id
+        form.name.data = chapter.name
+        form.description.data = chapter.description
+
+    if form.validate_on_submit():
+        try:
+            chapter.subject_id = form.subject_id.data
+            chapter.name = form.name.data
+            chapter.description = form.description.data
+            db.session.commit()
+            flash("Chapter updated successfully!", "success")
+            return redirect(url_for('manage_chapters'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating chapter: {str(e)}", "danger")
+    return render_template('edit_chapter.html', form=form, chapter=chapter)
+
+@app.route('/admin/delete_chapter/<int:chapter_id>')
+@admin_required
+def delete_chapter(chapter_id):
+    try:
+        chapter = Chapter.query.get_or_404(chapter_id)
+        db.session.delete(chapter)
+        db.session.commit()
+        flash("Chapter deleted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting chapter: {str(e)}", "danger")
+    return redirect(url_for('manage_chapters'))
+
+@app.route('/admin/edit_quiz/<int:quiz_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    form = QuizForm()
+    chapters = Chapter.query.all()
+    form.chapter_id.choices = [(chapter.id, f"{chapter.subject.name} - {chapter.name}") for chapter in chapters]
+
+    if request.method == 'GET':
+        form.chapter_id.data = quiz.chapter_id
+        form.title.data = quiz.title
+        form.description.data = quiz.description
+        form.date_of_quiz.data = quiz.date_of_quiz
+        form.time_duration.data = quiz.time_duration
+        form.remarks.data = quiz.remarks
+
+    if form.validate_on_submit():
+        try:
+            quiz.chapter_id = form.chapter_id.data
+            quiz.title = form.title.data
+            quiz.description = form.description.data
+            quiz.date_of_quiz = form.date_of_quiz.data
+            quiz.time_duration = form.time_duration.data
+            quiz.remarks = form.remarks.data
+            db.session.commit()
+            flash("Quiz updated successfully!", "success")
+            return redirect(url_for('recent_quizzes'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating quiz: {str(e)}", "danger")
+    return render_template('edit_quiz.html', form=form, quiz=quiz)
+
+@app.route('/admin/delete_quiz/<int:quiz_id>')
+@admin_required
+def delete_quiz(quiz_id):
+    try:
+        quiz = Quiz.query.get_or_404(quiz_id)
+        db.session.delete(quiz)
+        db.session.commit()
+        flash("Quiz deleted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting quiz: {str(e)}", "danger")
+    return redirect(url_for('recent_quizzes'))
+
+@app.route('/admin/recent_quizzes')
+@admin_required
+def recent_quizzes():
+    # Get the most recent 10 quizzes
+    recent_quizzes = Quiz.query.order_by(Quiz.created_at.desc()).limit(10).all()
+    return render_template('recent_quizzes.html', recent_quizzes=recent_quizzes)
 
 if __name__ == '__main__':
     with app.app_context():

@@ -3,69 +3,160 @@
 {% block title %}User Dashboard - Quiz Master{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card bg-dark">
-                <div class="card-body">
-                    <h1 class="display-4 mb-4 text-white">
-                        <i class="fas fa-user-circle text-primary me-3"></i>Welcome, {{ user.name }}!
-                    </h1>
-                    
-                    <div class="row g-4 mb-4">
-                        <div class="col-md-4">
-                            <div class="card h-100 bg-dark border border-white">
-                                <div class="card-body">
-                                    <i class="fas fa-chart-line fa-2x text-primary mb-3"></i>
-                                    <h5 class="card-title text-white">My Results</h5>
-                                    <p class="card-text text-white">Check your quiz performance history.</p>
-                                    <a href="{{ url_for('my_results') }}" class="btn btn-primary">
-                                        <i class="fas fa-chart-bar me-2"></i>View Results
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card h-100 bg-dark border border-white">
-                                <div class="card-body">
-                                    <i class="fas fa-user-cog fa-2x text-primary mb-3"></i>
-                                    <h5 class="card-title text-white">Profile Settings</h5>
-                                    <p class="card-text text-white">Manage your account settings.</p>
-                                    <a href="{{ url_for('profile') }}" class="btn btn-primary">
-                                        <i class="fas fa-cog me-2"></i>Settings
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+<div class="container mt-4">
+    <h2 class="text-white mb-4">Available Quizzes</h2>
+    
+    <!-- Filters -->
+    <div class="card bg-dark mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3" id="filterForm">
+                <div class="col-md-6">
+                    <label for="subject" class="form-label text-white">Subject</label>
+                    <select name="subject_id" id="subject" class="form-select bg-dark text-white" onchange="handleSubjectChange()">
+                        <option value="">Select Subject</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject.id }}" {% if selected_subject == subject.id %}selected{% endif %}>
+                            {{ subject.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="chapter" class="form-label text-white">Chapter</label>
+                    <select name="chapter_id" id="chapter" class="form-select bg-dark text-white" onchange="handleChapterChange()" disabled>
+                        <option value="">Select Chapter</option>
+                        {% for chapter in chapters %}
+                        <option value="{{ chapter.id }}" {% if selected_chapter == chapter.id %}selected{% endif %} 
+                                data-subject-id="{{ chapter.subject_id }}">
+                            {{ chapter.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                    <div class="mt-4">
-                        <h2 class="mb-4 text-white">Available Tests</h2>
-                        {% if tests %}
-                            <div class="row g-4">
-                                {% for test in tests %}
-                                    <div class="col-md-6">
-                                        <div class="card h-100 bg-dark border border-white">
-                                            <div class="card-body">
-                                                <h5 class="card-title text-white">{{ test.title }}</h5>
-                                                <p class="card-text text-white">Ready to challenge yourself?</p>
-                                                <a href="{{ url_for('attempt_test', test_id=test.id) }}" class="btn btn-primary">
-                                                    <i class="fas fa-play me-2"></i>Start Test
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i>No tests available at the moment.
-                            </div>
+    <!-- Quizzes List -->
+    <div class="row">
+        {% for quiz in tests %}
+        <div class="col-md-6 mb-4">
+            <div class="card bg-dark h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-white">{{ quiz.title }}</h5>
+                    <div class="mb-2">
+                        <span class="badge bg-primary">{{ quiz.chapter.subject.name }}</span>
+                        <span class="badge bg-info">{{ quiz.chapter.name }}</span>
+                    </div>
+                    {% if quiz.description %}
+                    <p class="card-text text-white-50">{{ quiz.description }}</p>
+                    {% endif %}
+                    <div class="mt-3">
+                        <p class="text-white mb-2">
+                            <i class="fas fa-calendar-alt me-2"></i>Date: {{ quiz.date_of_quiz.strftime('%Y-%m-%d') }}
+                        </p>
+                        <p class="text-white mb-2">
+                            <i class="fas fa-clock me-2"></i>Duration: {{ quiz.time_duration }}
+                        </p>
+                        {% if quiz.remarks %}
+                        <p class="text-white-50 mb-3">
+                            <i class="fas fa-info-circle me-2"></i>{{ quiz.remarks }}
+                        </p>
                         {% endif %}
+                        <a href="{{ url_for('attempt_test', test_id=quiz.id) }}" class="btn btn-primary">
+                            <i class="fas fa-play me-2"></i>Start Quiz
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No quizzes available for the selected filters.
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </div>
+
+<style>
+    .card {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .form-control, .form-select {
+        border-color: rgba(255, 255, 255, 0.2);
+        background-color: #2b3035;
+        color: white;
+    }
+    .form-control:focus, .form-select:focus {
+        background-color: #2b3035;
+        border-color: #0d6efd;
+        color: white;
+    }
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.5em 0.8em;
+        margin-right: 0.5rem;
+    }
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.75);
+    }
+</style>
+
+<script>
+    // Store original chapter options when page loads
+    const originalChapterOptions = Array.from(document.getElementById('chapter').options).slice(1); // Skip the "Select Chapter" option
+
+    function updateChapters() {
+        const subjectSelect = document.getElementById('subject');
+        const chapterSelect = document.getElementById('chapter');
+        const selectedSubjectId = subjectSelect.value;
+        
+        // Reset chapter select
+        chapterSelect.innerHTML = '<option value="">Select Chapter</option>';
+        
+        // If no subject is selected, disable chapter select
+        if (!selectedSubjectId) {
+            chapterSelect.disabled = true;
+            return;
+        }
+        
+        // Enable chapter select and show relevant chapters
+        chapterSelect.disabled = false;
+        originalChapterOptions.forEach(option => {
+            if (option.dataset.subjectId === selectedSubjectId) {
+                chapterSelect.appendChild(option.cloneNode(true));
+            }
+        });
+    }
+
+    function handleSubjectChange() {
+        updateChapters();
+        // Don't submit form when subject changes
+    }
+
+    function handleChapterChange() {
+        // Only submit form when chapter is selected
+        document.getElementById('filterForm').submit();
+    }
+
+    // Update chapters when page loads if a subject is selected
+    document.addEventListener('DOMContentLoaded', function() {
+        const subjectSelect = document.getElementById('subject');
+        const chapterSelect = document.getElementById('chapter');
+        
+        // Add event listeners
+        subjectSelect.onchange = handleSubjectChange;
+        chapterSelect.onchange = handleChapterChange;
+        
+        // Initial update if subject is selected
+        if (subjectSelect.value) {
+            updateChapters();
+        }
+    });
+</script>
 {% endblock %}
