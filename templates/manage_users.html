@@ -19,6 +19,8 @@
                                     <th class="text-white">Name</th>
                                     <th class="text-white">Email</th>
                                     <th class="text-white">Role</th>
+                                    <th class="text-white">Total Attempts</th>
+                                    <th class="text-white">Average Score</th>
                                     <th class="text-white text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -28,6 +30,14 @@
                                     <td class="text-white">{{ user.name }}</td>
                                     <td class="text-white">{{ user.email }}</td>
                                     <td class="text-white">{{ user.role|title }}</td>
+                                    <td class="text-white">{{ user.results|length }}</td>
+                                    <td class="text-white">
+                                        {% if user.results %}
+                                            {{ (user.results|map(attribute='percentage')|sum / user.results|length)|round(1) }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </td>
                                     <td class="text-center">
                                         {% if user.role != 'admin' %}
                                         <a href="{{ url_for('delete_user', user_id=user.id) }}" 

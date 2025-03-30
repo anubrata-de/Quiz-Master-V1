@@ -256,27 +256,10 @@ def view_score(test_id):
 @app.route('/admin_dashboard')
 @admin_required
 def admin_dashboard():
-    recent_tests = db.session.query(
-        Quiz,
-        db.func.count(Question.id).label('question_count'),
-        db.func.count(Result.id).label('attempt_count')
-    ).outerjoin(Question, Quiz.id == Question.quiz_id)\
-     .outerjoin(Result, Quiz.id == Result.quiz_id)\
-     .group_by(Quiz.id, Quiz.title)\
-     .order_by(Quiz.id.desc())\
-     .limit(5)\
-     .all()
-
-    formatted_tests = [{
-        'id': quiz.id,
-        'title': quiz.title,
-        'question_count': question_count,
-        'attempt_count': attempt_count
-    } for quiz, question_count, attempt_count in recent_tests]
-
+    recent_tests = Quiz.query.order_by(Quiz.id.desc()).all()
     return render_template('admin_dashboard.html', 
                          admin=current_user.name, 
-                         recent_tests=formatted_tests)
+                         recent_tests=recent_tests)
 
 @app.route('/admin/manage_users')
 @admin_required

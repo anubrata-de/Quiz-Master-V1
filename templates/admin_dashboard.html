@@ -18,7 +18,7 @@
                                 <tr>
                                     <th class="text-white">Test Title</th>
                                     <th class="text-white">Questions</th>
-                                    <th class="text-white">Attempts</th>
+                                    <th class="text-white">Total Attempts</th>
                                     <th class="text-white text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -26,8 +26,8 @@
                                 {% for test in recent_tests %}
                                 <tr>
                                     <td class="text-white">{{ test.title }}</td>
-                                    <td class="text-white">{{ test.question_count }}</td>
-                                    <td class="text-white">{{ test.attempt_count }}</td>
+                                    <td class="text-white">{{ test.questions|length }}</td>
+                                    <td class="text-white">{{ test.results|length }}</td>
                                     <td class="text-center">
                                         <a href="{{ url_for('delete_test', test_id=test.id) }}" 
                                            class="btn btn-danger"

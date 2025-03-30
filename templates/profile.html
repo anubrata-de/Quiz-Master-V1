@@ -55,9 +55,9 @@
                                     <div class="text-center">
                                         <h4 class="text-success">
                                             {% if user.results %}
-                                                {{ (user.results|map(attribute='score')|sum / user.results|length)|round(1) }}
+                                                {{ (user.results|map(attribute='percentage')|sum / user.results|length)|round(1) }}%
                                             {% else %}
-                                                0
+                                                0%
                                             {% endif %}
                                         </h4>
                                         <p class="text-white">Average Score</p>
