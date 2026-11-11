@@ -1,3 +1,13 @@
+<!-- portfolio
+title: Quiz Master V1
+tagline: Multi-User Exam Preparation Platform
+category: Full-stack apps
+summary: Admins manage subjects, chapters and quizzes; students take timed quizzes with a live countdown and auto-submit, then track their results.
+tags: Flask, Jinja2, SQLite, Bootstrap
+slug: quiz-master-v1
+featured: yes
+-->
+
 # Quiz Master - V1
 
 A multi-user exam preparation platform built with Flask that allows administrators to create and manage quizzes while enabling users to take tests and track their performance.
